@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BiblioTech 2.0</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>BiblioTech 2.0</h1>
+            <nav>
+                <a href="#search" class="active">Recherche</a>
+                <a href="#recommendations">Recommandations</a>
+                <a href="#dashboard">Dashboard</a>
+                <a href="#chatbot">Assistant IA</a>
+            </nav>
+        </header>
+
+        <button id="dark-mode-toggle">
+            <i class="fas fa-moon"></i>
+        </button>
+
+        <main>
+            <section id="search" class="active-section">
+                <h2><i class="fas fa-search genre-icon"></i>Découvrez votre prochaine lecture</h2>
+                <form id="search-form">
+                    <input type="text" id="search-input" placeholder="Entrez un titre, un auteur ou un genre...">
+                    <button type="submit">Rechercher</button>
+                </form>
+                <div id="advanced-filters">
+                    <!-- Ajoutez ici les filtres avancés -->
+                </div>
+                <div id="loading" class="loader" style="display: none;"></div>
+                <div id="search-results"></div>
+            </section>
+
+            <section id="recommendations">
+                <h2><i class="fas fa-book genre-icon"></i>Recommandations personnalisées</h2>
+                <div class="book-carousel">
+                    <!-- Les livres seront ajoutés ici dynamiquement -->
+                </div>
+                <div class="carousel-controls">
+                    <button id="prev-book"><i class="fas fa-chevron-left"></i></button>
+                    <button id="next-book"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </section>
+
+            <section id="dashboard">
+                <h2><i class="fas fa-chart-line genre-icon"></i>Dashboard des tendances</h2>
+                <div class="dashboard-grid">
+                    <div class="chart-container">
+                        <h3>Livres les plus notés</h3>
+                        <canvas id="topRatedChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Livres les plus lus par pays</h3>
+                        <canvas id="topReadByCountryChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Genres les plus populaires</h3>
+                        <canvas id="popularGenresChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Tendances de lecture</h3>
+                        <canvas id="readingTrendsChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <section id="chatbot">
+                <h2><i class="fas fa-robot genre-icon"></i>Assistant IA BiblioTech</h2>
+                <div id="chatbot-messages"></div>
+                <form id="chatbot-form">
+                    <input type="text" id="chatbot-input" placeholder="Posez une question à l'assistant...">
+                    <button type="submit">Envoyer</button>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</html>
