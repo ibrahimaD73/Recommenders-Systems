@@ -1,2 +1,5 @@
 .env
 .secrets
+preprocessed_data.csv
+# Ignorer tous les fichiers CSV
+*.csv
