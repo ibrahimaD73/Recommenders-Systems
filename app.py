@@ -7,24 +7,42 @@ import re
 import os
 from dotenv import load_dotenv
 import openai
-import logging
+from loguru import logger
+from google.cloud import storage
+from google.oauth2 import service_account
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logger.add("pipeline.log", rotation="500 MB", level="DEBUG")
 
 load_dotenv()
 
 app = Flask(__name__)
-
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# Charger les données
-data_dir = "/workspaces/Recommenders-Systems/data"
-books_path = os.path.join(data_dir, "merged_df.pkl")
-books_df = pd.read_pickle(books_path)
+def get_storage_client():
+    credentials = service_account.Credentials.from_service_account_file(os.getenv('GCP_CREDENTIALS'))
+    return storage.Client(credentials=credentials, project=os.getenv('GCP_PROJECT_ID'))
 
-# Nettoyage et prétraitement des données
-books_df['Year-Of-Publication'] = books_df['Year-Of-Publication'].replace({'0': '2022', '2037': '2022'}).astype(int)
-books_df['content'] = books_df['Book-Title'].fillna('') + ' ' + books_df['Book-Author'].fillna('') + ' ' + books_df['Publisher'].fillna('') + ' ' + books_df['Year-Of-Publication'].astype(str)
+def download_from_gcs(bucket_name, source_blob_name, destination_file_name):
+    storage_client = get_storage_client()
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(source_blob_name)
+    blob.download_to_filename(destination_file_name)
+    logger.info(f"Downloaded {source_blob_name} from {bucket_name} to {destination_file_name}.")
+
+# Charger les données
+def load_data():
+    try:
+        download_from_gcs(os.getenv('GCP_BUCKET_NAME'), 'preprocessed_data.csv', 'preprocessed_data.csv')
+        books_df = pd.read_csv('preprocessed_data.csv')
+        logger.info("Data loaded successfully from GCS.")
+        logger.info(f"DataFrame shape: {books_df.shape}")
+    except Exception as e:
+        logger.error(f"Error loading data: {e}")
+        raise
+    return books_df
+
+# Initialisation des données au démarrage de l'application
+books_df = load_data()
 
 # Création de la matrice TF-IDF
 tfidf = TfidfVectorizer(stop_words='english')
@@ -37,7 +55,7 @@ def index():
 @app.route('/search', methods=['POST'])
 def search():
     query = request.json.get('query', '').lower()
-    logging.debug(f"Recherche pour: {query}")
+    logger.debug(f"Recherche pour: {query}")
 
     query_vec = tfidf.transform([query])
     cosine_similarities = cosine_similarity(query_vec, tfidf_matrix).flatten()
@@ -57,7 +75,7 @@ def search():
             seen.add(book['ISBN'])
             unique_results.append(book)
 
-    logging.debug(f"Nombre de résultats: {len(unique_results)}")
+    logger.debug(f"Nombre de résultats: {len(unique_results)}")
     return jsonify(unique_results)
 
 @app.route('/chatbot', methods=['POST'])
@@ -66,7 +84,7 @@ def chatbot():
     if not user_input:
         return jsonify({"response": "Je n'ai rien reçu. Pouvez-vous reformuler votre demande ?"}), 400
 
-    logging.debug(f"Message reçu du chatbot: {user_input}")
+    logger.debug(f"Message reçu du chatbot: {user_input}")
 
     recommendations = get_book_recommendations(user_input)
 
@@ -113,10 +131,10 @@ def generate_chatbot_response(user_input, recommendations):
             temperature=0.7,
         )
         answer = response['choices'][0]['message']['content'].strip()
-        logging.debug(f"Réponse du chatbot générée avec succès")
+        logger.debug(f"Réponse du chatbot générée avec succès")
         return answer
     except Exception as e:
-        logging.error(f"Erreur lors de la génération de la réponse du chatbot: {e}")
+        logger.error(f"Erreur lors de la génération de la réponse du chatbot: {e}")
         return "Désolé, je ne peux pas traiter votre demande pour le moment."
 
 @app.route('/top_rated_books')
