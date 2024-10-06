@@ -3,12 +3,18 @@ install:
 		pip install -r requirements.txt
 
 test:
-	python -m pytest -vv test_hello.py
+	python -m pytest tests/
 
 format:
 	black *.py
 
 lint:
-	pylint --disable=R,C hello.py
+	pylint --disable=R,C app.py
 
-all: install lint tes
+run:
+	python app.py
+
+deploy:
+	gcloud app deploy
+
+all: install format lint test run

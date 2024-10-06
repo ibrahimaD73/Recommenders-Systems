@@ -111,22 +111,29 @@ document.addEventListener('DOMContentLoaded', function() {
         const bookElement = document.createElement('div');
         bookElement.className = `book ${position === -1 ? 'prev' : position === 0 ? 'active' : 'next'}`;
         
-        const imageUrl = book['Image-URL-L'] && book['Image-URL-L'].startsWith('http') 
-            ? book['Image-URL-L'] 
+        const imageUrl = book['Image-URL-L'] && book['Image-URL-L'].startsWith('http')
+            ? book['Image-URL-L']
             : '/static/default-book-cover.jpg';
-
-        const yearOfPublication = book['Year-Of-Publication'] === '0' || book['Year-Of-Publication'] === '2037' 
-            ? '2022' 
+    
+        const yearOfPublication = book['Year-Of-Publication'] === '0' || book['Year-Of-Publication'] === '2037'
+            ? '2022'
             : book['Year-Of-Publication'];
-
+    
+        const title = book['Book-Title'].replace(/harry potter/i, '').trim();
+        const author = book['Book-Author'];
+    
+        const comment = book['comment'] 
+            ? book['comment']
+            : `Plongez dans l'univers de ${author} avec "${title}" - Une aventure littéraire passionnante vous attend !`;
+    
         bookElement.innerHTML = `
             <img src="${imageUrl}" alt="${book['Book-Title']}" loading="lazy">
             <h3>${book['Book-Title']}</h3>
-            <p>${book['Book-Author']}</p>
+            <p>${author}</p>
             <p>${yearOfPublication}</p>
-            <div class="book-comment">${book['comment'] || 'Pas de commentaire disponible.'}</div>
+            <div class="book-comment">${comment}</div>
         `;
-
+        
         return bookElement;
     }
 
