@@ -45,11 +45,6 @@ jobs:
       run: |
         pylint **/*.py
 
-    - name: Deploy to Google App Engine
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      run: |
-        gcloud app deploy app.yaml --quiet
-
     - name: Upload logs as artifacts
       uses: actions/upload-artifact@v3
       if: always()
