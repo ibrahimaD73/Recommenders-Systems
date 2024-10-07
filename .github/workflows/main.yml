@@ -31,11 +31,21 @@ jobs:
         echo "GCP_BUCKET_NAME=${{ secrets.GCP_BUCKET_NAME }}" >> $GITHUB_ENV
         echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> $GITHUB_ENV
 
+    - name: Check Python environment
+      run: |
+        python --version
+        pip list
+        echo "Current working directory: $(pwd)"
+        echo "Contents of current directory:"
+        ls -la
+
     - name: Start Flask application
       run: |
+        echo "Starting Flask application..."
         python app.py > flask_output.log 2>&1 &
         echo $! > flask.pid
-        sleep 20  # Attendre que l'application démarre
+        echo "Waiting for Flask to start..."
+        sleep 45  # Increased wait time
 
     - name: Check Flask application logs
       run: |
@@ -46,20 +56,24 @@ jobs:
           cat app.log
         else
           echo "app.log not found"
+          echo "Contents of current directory:"
+          ls -la
         fi
 
     - name: Check if Flask app is running
       run: |
-        for i in {1..10}; do
+        for i in {1..15}; do
           echo "Attempt $i to connect to Flask app"
           if curl -sSf http://localhost:5000 > /dev/null; then
             echo "Flask application is running"
             exit 0
           fi
-          sleep 5
+          sleep 10
         done
         echo "Flask application failed to start"
-        echo "Last few lines of Flask log:"
+        echo "Last few lines of Flask output:"
+        tail -n 50 flask_output.log
+        echo "Last few lines of app log (if exists):"
         if [ -f app.log ]; then
           tail -n 50 app.log
         else
@@ -92,4 +106,18 @@ jobs:
         path: |
           flask_output.log
           app.log
+          *.log
         if-no-files-found: warn
+
+    - name: Debug information
+      if: failure()
+      run: |
+        echo "Debug information:"
+        echo "Environment variables:"
+        env
+        echo "Disk space:"
+        df -h
+        echo "Memory usage:"
+        free -m
+        echo "Running processes:"
+        ps aux
