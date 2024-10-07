@@ -18,15 +18,20 @@ load_dotenv()
 app = Flask(__name__)
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-
 def get_storage_client():
-    credentials_json = os.environ.get('GCP_CREDENTIALS')
-    if not credentials_json:
-        raise ValueError("GCP_CREDENTIALS environment variable is not set")
-    credentials_info = json.loads(credentials_json)
-    credentials = service_account.Credentials.from_service_account_info(credentials_info)
-    return storage.Client(credentials=credentials, project=os.environ.get('GCP_PROJECT_ID'))
-
+    gcp_credentials = os.getenv("GCP_CREDENTIALS")
+    if gcp_credentials:
+        # Si GCP_CREDENTIALS contient le JSON des credentials
+        credentials_info = json.loads(gcp_credentials)
+        credentials = service_account.Credentials.from_service_account_info(credentials_info)
+    else:
+        # Fallback pour l'environnement local ou si le chemin du fichier est fourni
+        credentials_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+        if not credentials_path:
+            raise ValueError("Neither GCP_CREDENTIALS nor GOOGLE_APPLICATION_CREDENTIALS is set")
+        credentials = service_account.Credentials.from_service_account_file(credentials_path)
+    
+    return storage.Client(credentials=credentials, project=os.getenv("GCP_PROJECT_ID"))
 
 def download_from_gcs(bucket_name, source_blob_name, destination_file_name):
     storage_client = get_storage_client()
