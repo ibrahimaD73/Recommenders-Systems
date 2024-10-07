@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Set up GCP credentials
+        env:
+          GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
+        run: |
+          echo "$GCP_CREDENTIALS" > gcp-credentials.json
+
+      - name: Set environment variables
+        run: |
+          echo "GOOGLE_APPLICATION_CREDENTIALS=${{ github.workspace }}/gcp-credentials.json" >> $GITHUB_ENV
+          echo "GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}" >> $GITHUB_ENV
+          echo "GCP_BUCKET_NAME=${{ secrets.GCP_BUCKET_NAME }}" >> $GITHUB_ENV
+          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> $GITHUB_ENV
+
+      - name: Run tests
+        run: |
+          pytest
+
+      - name: Run linter
+        run: |
+          pylint **/*.py
+
+      - name: Run your script
+        run: |
+          python app.py
