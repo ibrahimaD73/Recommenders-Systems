@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: '3.11'
 
@@ -42,7 +42,11 @@ jobs:
         echo "Flask application output:"
         cat flask_output.log
         echo "Flask application logs:"
-        cat app.log
+        if [ -f app.log ]; then
+          cat app.log
+        else
+          echo "app.log not found"
+        fi
 
     - name: Check if Flask app is running
       run: |
@@ -56,7 +60,11 @@ jobs:
         done
         echo "Flask application failed to start"
         echo "Last few lines of Flask log:"
-        tail -n 50 app.log
+        if [ -f app.log ]; then
+          tail -n 50 app.log
+        else
+          echo "app.log not found"
+        fi
         exit 1
 
     - name: Run tests
@@ -68,15 +76,20 @@ jobs:
         pylint **/*.py
 
     - name: Stop Flask application
-      run: |
-        kill $(cat flask.pid)
       if: always()
+      run: |
+        if [ -f flask.pid ]; then
+          kill $(cat flask.pid)
+        else
+          echo "Flask PID file not found"
+        fi
 
     - name: Upload logs as artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: always()
       with:
         name: flask-logs
         path: |
           flask_output.log
           app.log
+        if-no-files-found: warn
