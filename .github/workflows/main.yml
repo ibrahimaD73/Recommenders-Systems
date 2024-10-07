@@ -33,13 +33,21 @@ jobs:
 
     - name: Start Flask application
       run: |
-        python app.py &
+        python app.py > flask_output.log 2>&1 &
         echo $! > flask.pid
-        sleep 10  # Attendre que l'application démarre
+        sleep 20  # Attendre que l'application démarre
+
+    - name: Check Flask application logs
+      run: |
+        echo "Flask application output:"
+        cat flask_output.log
+        echo "Flask application logs:"
+        cat app.log
 
     - name: Check if Flask app is running
       run: |
-        for i in {1..5}; do
+        for i in {1..10}; do
+          echo "Attempt $i to connect to Flask app"
           if curl -sSf http://localhost:5000 > /dev/null; then
             echo "Flask application is running"
             exit 0
@@ -47,6 +55,8 @@ jobs:
           sleep 5
         done
         echo "Flask application failed to start"
+        echo "Last few lines of Flask log:"
+        tail -n 50 app.log
         exit 1
 
     - name: Run tests
@@ -60,4 +70,13 @@ jobs:
     - name: Stop Flask application
       run: |
         kill $(cat flask.pid)
-      if: always()  # Assurez-vous que cette étape s'exécute même si les étapes précédentes échouent
+      if: always()
+
+    - name: Upload logs as artifacts
+      uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: flask-logs
+        path: |
+          flask_output.log
+          app.log
