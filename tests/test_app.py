@@ -1,4 +1,7 @@
 import pytest
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from app import app, books_df, tfidf, tfidf_matrix, get_book_recommendations, generate_chatbot_response
 from flask import json
 from unittest.mock import patch, MagicMock
