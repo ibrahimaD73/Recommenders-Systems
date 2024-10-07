@@ -3,6 +3,8 @@ Test module for the BiblioTech 2.0 application.
 This module contains essential unit tests for core functionalities of the app.
 """
 
+# pylint: disable=redefined-outer-name, wrong-import-position
+
 import os
 import sys
 from unittest.mock import patch
@@ -13,33 +15,34 @@ from flask import json
 # Add the parent directory to the Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+# Now we can import from app
 from app import app, books_df, tfidf_matrix, get_book_recommendations, generate_chatbot_response
 
 @pytest.fixture(scope="module")
-def client():
+def test_client():
     """Provides a test client for the Flask app."""
     app.config['TESTING'] = True
-    with app.test_client() as test_client:
-        yield test_client
+    with app.test_client() as client:
+        yield client
 
-def test_index_route(client):
+def test_index_route(test_client):
     """Test the index route of the application."""
-    response = client.get('/')
+    response = test_client.get('/')
     assert response.status_code == 200
     assert b"BiblioTech 2.0" in response.data
 
-def test_search_route(client):
+def test_search_route(test_client):
     """Test the search route of the application."""
-    response = client.post('/search', json={"query": "python programming"})
+    response = test_client.post('/search', json={"query": "python programming"})
     assert response.status_code == 200
     data = json.loads(response.data)
     assert isinstance(data, list)
     assert len(data) > 0
     assert all(isinstance(book, dict) for book in data)
 
-def test_chatbot_route(client):
+def test_chatbot_route(test_client):
     """Test the chatbot route of the application."""
-    response = client.post('/chatbot', json={"message": "Recommend a science fiction book"})
+    response = test_client.post('/chatbot', json={"message": "Recommend a science fiction book"})
     assert response.status_code == 200
     data = json.loads(response.data)
     assert "response" in data
