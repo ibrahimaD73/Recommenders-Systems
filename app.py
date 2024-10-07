@@ -11,7 +11,11 @@ from loguru import logger
 from google.cloud import storage
 from google.oauth2 import service_account
 
-logger.add("pipeline.log", rotation="500 MB", level="DEBUG")
+logger.remove() 
+logger.add("pipeline.log"",rotation="500 MB",level="DEBUG",format="{time} {level} {message}",backtrace=True, diagnose=True)
+logger.add(sys.stderr, level="INFO")
+
+load_dotenv()
 
 load_dotenv()
 
@@ -235,7 +239,13 @@ def reading_trends():
     months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]
     books_read = [50, 60, 55, 70, 65, 80]
     return jsonify({"labels": months, "values": books_read})
-
+# Au début du fichier, ajoutez :
+import logging
 
 if __name__ == "__main__":
-    app.run(debug=True)
+   logger.info("Starting Flask application...")
+    try:
+        app.run(host='0.0.0.0', port=5000, debug=True)
+    except Exception as e:
+        logger.exception(f"Failed to start Flask application: {e}")
+        raise
