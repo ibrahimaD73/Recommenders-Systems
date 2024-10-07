@@ -20,10 +20,12 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
 def get_storage_client():
-    credentials = service_account.Credentials.from_service_account_file(
-        os.getenv("GCP_CREDENTIALS")
-    )
-    return storage.Client(credentials=credentials, project=os.getenv("GCP_PROJECT_ID"))
+    credentials_json = os.environ.get('GCP_CREDENTIALS')
+    if not credentials_json:
+        raise ValueError("GCP_CREDENTIALS environment variable is not set")
+    credentials_info = json.loads(credentials_json)
+    credentials = service_account.Credentials.from_service_account_info(credentials_info)
+    return storage.Client(credentials=credentials, project=os.environ.get('GCP_PROJECT_ID'))
 
 
 def download_from_gcs(bucket_name, source_blob_name, destination_file_name):
