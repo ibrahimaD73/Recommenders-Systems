@@ -11,33 +11,19 @@ from loguru import logger
 from google.cloud import storage
 from google.oauth2 import service_account
 
-load_dotenv()
+logger.add("pipeline.log", rotation="500 MB", level="DEBUG")
 
-logger.remove()
-logger.add("app.log", rotation="500 MB", level="DEBUG", format="{time} {level} {message}", backtrace=True, diagnose=True)
-logger.add(sys.stderr, level="INFO")
+load_dotenv()
 
 app = Flask(__name__)
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
+
 def get_storage_client():
-    logger.debug("Attempting to get storage client")
-    gcp_credentials = os.getenv("GCP_CREDENTIALS")
-    if gcp_credentials:
-        logger.debug("Using GCP_CREDENTIALS environment variable")
-        credentials_info = json.loads(gcp_credentials)
-        credentials = service_account.Credentials.from_service_account_info(credentials_info)
-    else:
-        logger.debug("Falling back to GOOGLE_APPLICATION_CREDENTIALS")
-        credentials_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-        if not credentials_path:
-            logger.error("Neither GCP_CREDENTIALS nor GOOGLE_APPLICATION_CREDENTIALS is set")
-            raise ValueError("Neither GCP_CREDENTIALS nor GOOGLE_APPLICATION_CREDENTIALS is set")
-        credentials = service_account.Credentials.from_service_account_file(credentials_path)
-    
-    project_id = os.getenv("GCP_PROJECT_ID")
-    logger.info(f"Creating storage client with project ID: {project_id}")
-    return storage.Client(credentials=credentials, project=project_id)
+    credentials = service_account.Credentials.from_service_account_file(
+        os.getenv("GCP_CREDENTIALS")
+    )
+    return storage.Client(credentials=credentials, project=os.getenv("GCP_PROJECT_ID"))
 
 
 def download_from_gcs(bucket_name, source_blob_name, destination_file_name):
@@ -243,12 +229,6 @@ def reading_trends():
     books_read = [50, 60, 55, 70, 65, 80]
     return jsonify({"labels": months, "values": books_read})
 
+
 if __name__ == "__main__":
-    logger.info("Starting Flask application...")
-    try:
-        port = int(os.environ.get("PORT", 5000))
-        logger.info(f"Attempting to start Flask app on port {port}")
-        app.run(host='0.0.0.0', port=port, debug=True)
-    except Exception as e:
-        logger.exception(f"Failed to start Flask application: {e}")
-        raise
+    app.run(host="0.0.0.0", port=8000,debug=True)
