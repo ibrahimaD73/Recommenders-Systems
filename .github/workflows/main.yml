@@ -16,7 +16,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.11'
+        python-version: '3.9'
 
     - name: Install dependencies
       run: |
@@ -31,56 +31,6 @@ jobs:
         echo "GCP_BUCKET_NAME=${{ secrets.GCP_BUCKET_NAME }}" >> $GITHUB_ENV
         echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> $GITHUB_ENV
 
-    - name: Check Python environment
-      run: |
-        python --version
-        pip list
-        echo "Current working directory: $(pwd)"
-        echo "Contents of current directory:"
-        ls -la
-
-    - name: Start Flask application
-      run: |
-        echo "Starting Flask application..."
-        python app.py > flask_output.log 2>&1 &
-        echo $! > flask.pid
-        echo "Waiting for Flask to start..."
-        sleep 45  # Increased wait time
-
-    - name: Check Flask application logs
-      run: |
-        echo "Flask application output:"
-        cat flask_output.log
-        echo "Flask application logs:"
-        if [ -f app.log ]; then
-          cat app.log
-        else
-          echo "app.log not found"
-          echo "Contents of current directory:"
-          ls -la
-        fi
-
-    - name: Check if Flask app is running
-      run: |
-        for i in {1..15}; do
-          echo "Attempt $i to connect to Flask app"
-          if curl -sSf http://localhost:5000 > /dev/null; then
-            echo "Flask application is running"
-            exit 0
-          fi
-          sleep 10
-        done
-        echo "Flask application failed to start"
-        echo "Last few lines of Flask output:"
-        tail -n 50 flask_output.log
-        echo "Last few lines of app log (if exists):"
-        if [ -f app.log ]; then
-          tail -n 50 app.log
-        else
-          echo "app.log not found"
-        fi
-        exit 1
-
     - name: Run tests
       run: |
         pytest
@@ -89,35 +39,20 @@ jobs:
       run: |
         pylint **/*.py
 
-    - name: Stop Flask application
-      if: always()
+    - name: Deploy to Google App Engine
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
-        if [ -f flask.pid ]; then
-          kill $(cat flask.pid)
-        else
-          echo "Flask PID file not found"
-        fi
+        gcloud auth activate-service-account --key-file=gcp_credentials.json
+        gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
+        gcloud app deploy app.yaml --quiet
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp_credentials.json
 
     - name: Upload logs as artifacts
       uses: actions/upload-artifact@v3
       if: always()
       with:
-        name: flask-logs
+        name: logs
         path: |
-          flask_output.log
-          app.log
           *.log
         if-no-files-found: warn
-
-    - name: Debug information
-      if: failure()
-      run: |
-        echo "Debug information:"
-        echo "Environment variables:"
-        env
-        echo "Disk space:"
-        df -h
-        echo "Memory usage:"
-        free -m
-        echo "Running processes:"
-        ps aux
