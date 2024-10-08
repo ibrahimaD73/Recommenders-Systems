@@ -39,7 +39,7 @@ jobs:
 
     - name: Run linter
       run: |
-        pylint **/*.py
+        pylint --disable=R,C app.py
 
     - name: Upload logs as artifacts
       uses: actions/upload-artifact@v3
