@@ -23,6 +23,11 @@ steps:
   - '--platform'
   - 'managed'
   - '--allow-unauthenticated'
+  - '--set-env-vars'
+  - 'GCP_PROJECT_ID=$PROJECT_ID,GCP_BUCKET_NAME=system_recommendation,OPENAI_API_KEY=${_OPENAI_API_KEY}'
 
 images:
 - 'gcr.io/$PROJECT_ID/recommender-app:$COMMIT_SHA'
+
+substitutions:
+  _OPENAI_API_KEY: 

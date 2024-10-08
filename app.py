@@ -11,6 +11,9 @@ from loguru import logger
 from google.cloud import storage
 from google.oauth2 import service_account
 from google.auth import default
+import json
+import base64
+
 
 logger.add("pipeline.log", rotation="500 MB", level="DEBUG")
 
@@ -19,22 +22,18 @@ load_dotenv()
 app = Flask(__name__)
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-
-
 def get_storage_client():
-    if os.getenv('GITHUB_ACTIONS'):
-        # We're running in GitHub Actions
+    if os.environ.get('K_SERVICE'):  # Check if running on Cloud Run
         credentials, project = default()
     else:
         # We're running locally
-        credentials_path = os.getenv("GCP_CREDENTIALS")
+        credentials_path = os.environ.get("GCP_CREDENTIALS")
         if not credentials_path:
             raise ValueError("GCP_CREDENTIALS environment variable is not set")
         credentials = service_account.Credentials.from_service_account_file(credentials_path)
-        project = os.getenv("GCP_PROJECT_ID")
+        project = os.environ.get("GCP_PROJECT_ID")
     
     return storage.Client(credentials=credentials, project=project)
-
 
 def download_from_gcs(bucket_name, source_blob_name, destination_file_name):
     storage_client = get_storage_client()
@@ -44,7 +43,6 @@ def download_from_gcs(bucket_name, source_blob_name, destination_file_name):
     logger.info(
         f"Downloaded {source_blob_name} from {bucket_name} to {destination_file_name}."
     )
-
 
 # Charger les données
 def load_data():
@@ -241,4 +239,5 @@ def reading_trends():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000,debug=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)), debug=False)
+    
