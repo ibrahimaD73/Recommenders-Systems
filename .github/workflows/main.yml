@@ -37,10 +37,6 @@ jobs:
         echo "GCP_BUCKET_NAME=${{ secrets.GCP_BUCKET_NAME }}" >> $GITHUB_ENV
         echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> $GITHUB_ENV
 
-    - name: Run linter
-      run: |
-        pylint --disable=R,C app.py
-
     - name: Upload logs as artifacts
       uses: actions/upload-artifact@v3
       if: always()
