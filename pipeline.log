@@ -44,3 +44,36 @@
 2024-10-08 00:52:21.986 | DEBUG    | __main__:search:102 - Nombre de résultats: 1
 2024-10-08 00:52:39.598 | DEBUG    | __main__:chatbot:119 - Message reçu du chatbot: jeune garçon qui aime le foot ball
 2024-10-08 00:52:52.282 | DEBUG    | __main__:generate_chatbot_response:202 - Réponse du chatbot générée avec succès
+2024-10-11 23:18:43.740 | INFO     | __main__:download_from_gcs:43 - Downloaded preprocessed_data.csv from system_recommendation to preprocessed_data.csv.
+2024-10-11 23:18:49.850 | INFO     | __main__:load_data:56 - Data loaded successfully from GCS.
+2024-10-11 23:18:49.850 | INFO     | __main__:load_data:57 - DataFrame shape: (1031136, 16)
+2024-10-11 23:24:37.500 | INFO     | __main__:download_from_gcs:43 - Downloaded preprocessed_data.csv from system_recommendation to preprocessed_data.csv.
+2024-10-11 23:24:45.042 | INFO     | __main__:load_data:56 - Data loaded successfully from GCS.
+2024-10-11 23:24:45.043 | INFO     | __main__:load_data:57 - DataFrame shape: (1031136, 16)
+2024-10-11 23:28:10.696 | INFO     | __main__:load_data:52 - Data loaded successfully from GCS.
+2024-10-11 23:28:10.697 | INFO     | __main__:load_data:53 - DataFrame shape: (1031136, 16)
+2024-10-11 23:28:43.696 | DEBUG    | __main__:search:71 - Recherche pour: comedy
+2024-10-11 23:28:44.069 | DEBUG    | __main__:search:86 - Nombre de résultats: 3
+2024-10-11 23:29:00.939 | DEBUG    | __main__:chatbot:95 - Message reçu du chatbot: Je cherche des livres de comedy
+2024-10-11 23:31:34.825 | INFO     | __main__:load_data:52 - Data loaded successfully from GCS.
+2024-10-11 23:31:34.825 | INFO     | __main__:load_data:53 - DataFrame shape: (1031136, 16)
+2024-10-11 23:34:34.108 | INFO     | __main__:load_data:52 - Data loaded successfully from GCS.
+2024-10-11 23:34:34.108 | INFO     | __main__:load_data:53 - DataFrame shape: (1031136, 16)
+2024-10-11 23:35:15.350 | DEBUG    | __main__:search:71 - Recherche pour: comedy
+2024-10-11 23:35:15.765 | DEBUG    | __main__:search:86 - Nombre de résultats: 3
+2024-10-11 23:35:24.166 | DEBUG    | __main__:chatbot:163 - Message reçu du chatbot: Je cherche un livre de magie
+2024-10-11 23:35:37.406 | DEBUG    | __main__:generate_chatbot_response:151 - Réponse du chatbot générée avec succès
+2024-10-11 23:35:56.343 | DEBUG    | __main__:search:71 - Recherche pour: j'aime les films
+2024-10-11 23:35:56.752 | DEBUG    | __main__:search:86 - Nombre de résultats: 5
+2024-10-11 23:42:15.746 | INFO     | __main__:load_data:52 - Data loaded successfully from GCS.
+2024-10-11 23:42:15.746 | INFO     | __main__:load_data:53 - DataFrame shape: (1031136, 16)
+2024-10-11 23:43:24.755 | DEBUG    | __main__:search:71 - Recherche pour: 2010
+2024-10-11 23:43:25.130 | DEBUG    | __main__:search:86 - Nombre de résultats: 3
+2024-10-11 23:43:30.706 | DEBUG    | __main__:chatbot:163 - Message reçu du chatbot: fiction
+2024-10-11 23:43:47.142 | DEBUG    | __main__:generate_chatbot_response:151 - Réponse du chatbot générée avec succès
+2024-10-12 00:06:05.683 | INFO     | __main__:load_data:52 - Data loaded successfully from GCS.
+2024-10-12 00:06:05.684 | INFO     | __main__:load_data:53 - DataFrame shape: (1031136, 16)
+2024-10-12 00:07:11.409 | DEBUG    | __main__:search:71 - Recherche pour: jeune
+2024-10-12 00:07:11.897 | DEBUG    | __main__:search:86 - Nombre de résultats: 1
+2024-10-12 00:07:18.802 | DEBUG    | __main__:chatbot:163 - Message reçu du chatbot: fiction
+2024-10-12 00:07:31.599 | DEBUG    | __main__:generate_chatbot_response:151 - Réponse du chatbot générée avec succès

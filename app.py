@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-import re
 import os
 from dotenv import load_dotenv
 import openai
@@ -11,17 +10,16 @@ from loguru import logger
 from google.cloud import storage
 from google.oauth2 import service_account
 from google.auth import default
-import json
-import base64
-
+from functools import lru_cache
+from io import StringIO
 
 logger.add("pipeline.log", rotation="500 MB", level="DEBUG")
-
 load_dotenv()
 
 app = Flask(__name__)
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
+@lru_cache(maxsize=1)
 def get_storage_client():
     if os.environ.get('K_SERVICE'):  # Check if running on Cloud Run
         credentials, project = default()
@@ -35,44 +33,37 @@ def get_storage_client():
     
     return storage.Client(credentials=credentials, project=project)
 
-def download_from_gcs(bucket_name, source_blob_name, destination_file_name):
-    storage_client = get_storage_client()
-    bucket = storage_client.bucket(bucket_name)
-    blob = bucket.blob(source_blob_name)
-    blob.download_to_filename(destination_file_name)
-    logger.info(
-        f"Downloaded {source_blob_name} from {bucket_name} to {destination_file_name}."
-    )
-
-# Charger les données
+@lru_cache(maxsize=1)
 def load_data():
     try:
-        download_from_gcs(
-            os.getenv("GCP_BUCKET_NAME"),
-            "preprocessed_data.csv",
-            "preprocessed_data.csv",
-        )
-        books_df = pd.read_csv("preprocessed_data.csv")
+        storage_client = get_storage_client()
+        bucket = storage_client.bucket(os.getenv("GCP_BUCKET_NAME"))
+        blob = bucket.blob("preprocessed_data.csv")
+        
+        # Télécharger le contenu du fichier en mémoire
+        content = blob.download_as_text()
+        
+        # Utiliser StringIO pour créer un objet semblable à un fichier en mémoire
+        csv_file = StringIO(content)
+        
+        # Lire le CSV directement à partir de l'objet en mémoire
+        books_df = pd.read_csv(csv_file)
+        
         logger.info("Data loaded successfully from GCS.")
         logger.info(f"DataFrame shape: {books_df.shape}")
+        return books_df
     except Exception as e:
         logger.error(f"Error loading data: {e}")
         raise
-    return books_df
 
-
-# Initialisation des données au démarrage de l'application
 books_df = load_data()
 
-# Création de la matrice TF-IDF
 tfidf = TfidfVectorizer(stop_words="english")
 tfidf_matrix = tfidf.fit_transform(books_df["content"])
-
 
 @app.route("/")
 def index():
     return render_template("index.html")
-
 
 @app.route("/search", methods=["POST"])
 def search():
@@ -87,62 +78,26 @@ def search():
 
     if query.isdigit():
         year_query = int(query)
-        year_results = books_df[books_df["Year-Of-Publication"] == year_query].to_dict(
-            "records"
-        )
+        year_results = books_df[books_df["Year-Of-Publication"] == year_query].to_dict("records")
         results.extend(year_results)
 
-    unique_results = []
-    seen = set()
-    for book in results:
-        if book["ISBN"] not in seen:
-            seen.add(book["ISBN"])
-            unique_results.append(book)
+    unique_results = list({book["ISBN"]: book for book in results}.values())
 
     logger.debug(f"Nombre de résultats: {len(unique_results)}")
     return jsonify(unique_results)
 
 
-@app.route("/chatbot", methods=["POST"])
-def chatbot():
-    user_input = request.json.get("message", "")
-    if not user_input:
-        return (
-            jsonify(
-                {
-                    "response": "Je n'ai rien reçu. Pouvez-vous reformuler votre demande ?"
-                }
-            ),
-            400,
-        )
-
-    logger.debug(f"Message reçu du chatbot: {user_input}")
-
-    recommendations = get_book_recommendations(user_input)
-
-    chatbot_response = generate_chatbot_response(user_input, recommendations)
-
-    return jsonify({"response": chatbot_response, "books": recommendations})
-
-
+@lru_cache(maxsize=100)
 def get_book_recommendations(query, n=5):
     query_vec = tfidf.transform([query])
     cosine_similarities = cosine_similarity(query_vec, tfidf_matrix).flatten()
-    related_docs_indices = cosine_similarities.argsort()[: -n - 1 : -1]
+    related_docs_indices = cosine_similarities.argsort()[:-n-1:-1]
 
     recommendations = books_df.iloc[related_docs_indices][
-        [
-            "ISBN",
-            "Book-Title",
-            "Book-Author",
-            "Image-URL-L",
-            "Year-Of-Publication",
-            "Book-Rating",
-        ]
+        ["ISBN", "Book-Title", "Book-Author", "Image-URL-L", "Year-Of-Publication", "Book-Rating"]
     ]
     recommendations = recommendations.drop_duplicates(subset="Book-Title").head(n)
 
-    # Générer un commentaire basé sur la note du livre
     for index, book in recommendations.iterrows():
         rating = book["Book-Rating"]
         if rating >= 4.5:
@@ -160,13 +115,10 @@ def get_book_recommendations(query, n=5):
 
     return recommendations.to_dict("records")
 
-
 def generate_chatbot_response(user_input, recommendations):
     formatted_recommendations = "\n".join(
-        [
-            f"• {book['Book-Title']} par {book['Book-Author']} (publié en {book['Year-Of-Publication']}) - {book['comment']}"
-            for book in recommendations
-        ]
+        [f"• {book['Book-Title']} par {book['Book-Author']} (publié en {book['Year-Of-Publication']}) - {book['comment']}"
+         for book in recommendations]
     )
 
     prompt = f"""
@@ -188,10 +140,7 @@ def generate_chatbot_response(user_input, recommendations):
         response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=[
-                {
-                    "role": "system",
-                    "content": "Vous êtes un assistant qui recommande des livres de manière personnalisée et enthousiaste.",
-                },
+                {"role": "system", "content": "Vous êtes un assistant qui recommande des livres de manière personnalisée et enthousiaste."},
                 {"role": "user", "content": user_input},
                 {"role": "assistant", "content": prompt},
             ],
@@ -205,39 +154,48 @@ def generate_chatbot_response(user_input, recommendations):
         logger.error(f"Erreur lors de la génération de la réponse du chatbot: {e}")
         return "Je suis désolé, mais je n'ai pas pu trouver de recommandations spécifiques pour votre demande. Cependant, n'hésitez pas à explorer notre vaste collection de livres. Que diriez-vous de me parler un peu plus de vos goûts littéraires ? Je serai ravi de vous aider à trouver votre prochaine lecture passionnante !"
 
+@app.route("/chatbot", methods=["POST"])
+def chatbot():
+    user_input = request.json.get("message", "")
+    if not user_input:
+        return jsonify({"response": "Je n'ai rien reçu. Pouvez-vous reformuler votre demande ?"}), 400
 
-@app.route("/top_rated_books")
+    logger.debug(f"Message reçu du chatbot: {user_input}")
+
+    recommendations = get_book_recommendations(user_input)
+    chatbot_response = generate_chatbot_response(user_input, recommendations)
+
+    return jsonify({"response": chatbot_response, "books": recommendations})
+
+@lru_cache(maxsize=1)
 def top_rated_books():
     top_books = books_df.sort_values("Book-Rating", ascending=False).head(5)
-    return jsonify(
-        {
-            "labels": top_books["Book-Title"].tolist(),
-            "values": top_books["Book-Rating"].tolist(),
-        }
-    )
-
+    return jsonify({
+        "labels": top_books["Book-Title"].tolist(),
+        "values": top_books["Book-Rating"].tolist(),
+    })
 
 @app.route("/top_read_by_country")
+@lru_cache(maxsize=1)
 def top_read_by_country():
     countries = ["USA", "UK", "France", "Germany", "Japan"]
     reads = [1000, 800, 600, 500, 400]
     return jsonify({"labels": countries, "values": reads})
 
-
 @app.route("/popular_genres")
+@lru_cache(maxsize=1)
 def popular_genres():
     genres = ["Fiction", "Non-fiction", "Science-fiction", "Romance", "Thriller"]
     popularity = [40, 30, 15, 10, 5]
     return jsonify({"labels": genres, "values": popularity})
 
-
 @app.route("/reading_trends")
+@lru_cache(maxsize=1)
 def reading_trends():
     months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]
     books_read = [50, 60, 55, 70, 65, 80]
     return jsonify({"labels": months, "values": books_read})
 
-
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)), debug=False)
-    
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)
