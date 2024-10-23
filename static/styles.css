@@ -452,24 +452,7 @@ button:hover {
     animation: floatAnimation 3s ease-in-out infinite;
 }
 
-#dark-mode-toggle {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: var(--primary-color);
-    color: var(--background-color);
-    border: none;
-    padding: 10px;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: background-color var(--transition-speed), transform var(--transition-speed);
-    z-index: 1000;
-}
 
-#dark-mode-toggle:hover {
-    background: var(--secondary-color);
-    transform: scale(1.1);
-}
 
 .genre-icon {
     font-size: 1.5em;

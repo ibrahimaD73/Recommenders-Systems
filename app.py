@@ -21,7 +21,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 @lru_cache(maxsize=1)
 def get_storage_client():
-    if os.environ.get('K_SERVICE'):  # Check if running on Cloud Run
+    if os.environ.get('K_SERVICE'): 
         credentials, project = default()
     else:
         # We're running locally
@@ -167,35 +167,79 @@ def chatbot():
 
     return jsonify({"response": chatbot_response, "books": recommendations})
 
+@app.route("/top_rated_books")
 @lru_cache(maxsize=1)
 def top_rated_books():
     top_books = books_df.sort_values("Book-Rating", ascending=False).head(5)
-    return jsonify({
-        "labels": top_books["Book-Title"].tolist(),
-        "values": top_books["Book-Rating"].tolist(),
-    })
+    return jsonify(
+        {
+            "labels": top_books["Book-Title"].tolist(),
+            "values": top_books["Book-Rating"].tolist(),
+        }
+    )
 
 @app.route("/top_read_by_country")
 @lru_cache(maxsize=1)
 def top_read_by_country():
-    countries = ["USA", "UK", "France", "Germany", "Japan"]
-    reads = [1000, 800, 600, 500, 400]
-    return jsonify({"labels": countries, "values": reads})
+    try:
+        countries = ["USA", "UK", "France", "Germany", "Japan"]
+        reads = [1000, 800, 600, 500, 400]
+        percentages = [round((x / sum(reads)) * 100, 1) for x in reads]
+        
+        return jsonify({
+            "labels": countries,
+            "values": reads,
+            "percentages": percentages,
+            "total": sum(reads)
+        })
+    except Exception as e:
+        logger.error(f"Erreur lors de la récupération des pays lecteurs: {e}")
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/popular_genres")
 @lru_cache(maxsize=1)
 def popular_genres():
-    genres = ["Fiction", "Non-fiction", "Science-fiction", "Romance", "Thriller"]
-    popularity = [40, 30, 15, 10, 5]
-    return jsonify({"labels": genres, "values": popularity})
+    try:
+        genres = ["Fiction", "Non-fiction", "Science-fiction", "Romance", "Thriller"]
+        popularity = [40, 30, 15, 10, 5]
+        total = sum(popularity)
+        percentages = [round((x / total) * 100, 1) for x in popularity]
+        
+        return jsonify({
+            "labels": genres,
+            "values": popularity,
+            "percentages": percentages,
+            "total": total
+        })
+    except Exception as e:
+        logger.error(f"Erreur lors de la récupération des genres populaires: {e}")
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/reading_trends")
 @lru_cache(maxsize=1)
 def reading_trends():
-    months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]
-    books_read = [50, 60, 55, 70, 65, 80]
-    return jsonify({"labels": months, "values": books_read})
+    try:
+        months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]
+        books_read = [50, 60, 55, 70, 65, 80]
+        
+        # Calculer les tendances
+        changes = []
+        for i in range(1, len(books_read)):
+            change = ((books_read[i] - books_read[i-1]) / books_read[i-1]) * 100
+            changes.append(round(change, 1))
+        changes.insert(0, 0) 
+        
+        return jsonify({
+            "labels": months,
+            "values": books_read,
+            "changes": changes,
+            "total": sum(books_read),
+            "average": round(sum(books_read) / len(books_read), 1)
+        })
+    except Exception as e:
+        logger.error(f"Erreur lors de la récupération des tendances de lecture: {e}")
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT", 6000))
     app.run(host="0.0.0.0", port=port, debug=False)
