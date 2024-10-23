@@ -6,7 +6,7 @@ Bibliotech 2.0 est un système de recommandation de livres utilisant des techniq
 
 ## Démo
 
-Vous pouvez essayer la version en ligne de Bibliotech 2.0 ici : [https://book-recommender-946681472540.europe-west9.run.app/](https://book-recommender-946681472540.europe-west9.run.app/)
+Vous pouvez essayer la version en ligne de Bibliotech 2.0 ici : [https://appbook-946681472540.europe-west9.run.app/](https://appbook-946681472540.europe-west9.run.app/)
 
 ![Démonstration de Bibliotech 2.0](biblio.png)
 
