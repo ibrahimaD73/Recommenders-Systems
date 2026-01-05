@@ -8,3 +8,44 @@
 2024-10-23 17:14:59.501 | DEBUG    | app:generate_chatbot_response:151 - Réponse du chatbot générée avec succès
 2024-10-23 20:26:20.359 | INFO     | __main__:load_data:52 - Data loaded successfully from GCS.
 2024-10-23 20:26:20.519 | INFO     | __main__:load_data:53 - DataFrame shape: (1031136, 16)
+2026-01-05 15:00:38.109 | ERROR    | __main__:load_data:56 - Error loading data: GCP_CREDENTIALS environment variable is not set
+2026-01-05 15:18:25.417 | INFO     | __main__:load_data:30 - Data loaded successfully from local file.
+2026-01-05 15:18:25.418 | INFO     | __main__:load_data:31 - DataFrame shape: (1031136, 16)
+2026-01-05 15:27:14.443 | INFO     | __main__:load_data:30 - Data loaded successfully from local file.
+2026-01-05 15:27:14.443 | INFO     | __main__:load_data:31 - DataFrame shape: (1031136, 16)
+2026-01-05 15:27:59.808 | DEBUG    | __main__:search:49 - Recherche pour: harry potter
+2026-01-05 15:28:00.420 | DEBUG    | __main__:search:64 - Nombre de résultats: 3
+2026-01-05 15:28:25.287 | DEBUG    | __main__:chatbot:141 - Message reçu du chatbot: Je cherche des livres de harry potter
+2026-01-05 15:28:25.886 | ERROR    | __main__:generate_chatbot_response:132 - Erreur lors de la génération de la réponse du chatbot: No API key provided. You can set your API key in code using 'openai.api_key = <API-KEY>', or you can set the environment variable OPENAI_API_KEY=<API-KEY>). If your API key is stored in a file, you can point the openai module at it with 'openai.api_key_path = <PATH>'. You can generate API keys in the OpenAI web interface. See https://onboard.openai.com for details, or email support@openai.com if you have any questions.
+2026-01-05 15:28:46.188 | DEBUG    | __main__:chatbot:141 - Message reçu du chatbot: hello
+2026-01-05 15:28:46.728 | ERROR    | __main__:generate_chatbot_response:132 - Erreur lors de la génération de la réponse du chatbot: No API key provided. You can set your API key in code using 'openai.api_key = <API-KEY>', or you can set the environment variable OPENAI_API_KEY=<API-KEY>). If your API key is stored in a file, you can point the openai module at it with 'openai.api_key_path = <PATH>'. You can generate API keys in the OpenAI web interface. See https://onboard.openai.com for details, or email support@openai.com if you have any questions.
+2026-01-05 16:55:16.289 | INFO     | __main__:load_data:29 - Data loaded successfully from local file.
+2026-01-05 16:55:16.302 | INFO     | __main__:load_data:30 - DataFrame shape: (1031136, 16)
+2026-01-05 16:57:12.537 | DEBUG    | __main__:chatbot:136 - Message reçu du chatbot: hello
+2026-01-05 16:57:13.073 | ERROR    | __main__:generate_chatbot_response:126 - Erreur lors de la génération de la réponse du chatbot: 404 models/gemini-pro is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+2026-01-05 17:02:36.674 | INFO     | __main__:load_data:29 - Data loaded successfully from local file.
+2026-01-05 17:02:36.675 | INFO     | __main__:load_data:30 - DataFrame shape: (1031136, 16)
+2026-01-05 17:05:32.747 | DEBUG    | __main__:chatbot:136 - Message reçu du chatbot: hello
+2026-01-05 17:05:33.273 | ERROR    | __main__:generate_chatbot_response:126 - Erreur lors de la génération de la réponse du chatbot: 404 models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+2026-01-05 17:34:37.145 | INFO     | __main__:load_data:29 - Data loaded successfully from local file.
+2026-01-05 17:34:37.146 | INFO     | __main__:load_data:30 - DataFrame shape: (1031136, 16)
+2026-01-05 17:35:35.009 | DEBUG    | __main__:chatbot:136 - Message reçu du chatbot: Je cherche des livres de harry potter
+2026-01-05 17:35:35.539 | ERROR    | __main__:generate_chatbot_response:126 - Erreur lors de la génération de la réponse du chatbot: 404 models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+2026-01-05 17:39:46.124 | INFO     | __main__:load_data:30 - Data loaded successfully from local file.
+2026-01-05 17:39:46.125 | INFO     | __main__:load_data:31 - DataFrame shape: (1031136, 16)
+2026-01-05 17:40:33.988 | DEBUG    | __main__:chatbot:137 - Message reçu du chatbot: hello
+2026-01-05 17:40:34.503 | ERROR    | __main__:generate_chatbot_response:127 - Erreur lors de la génération de la réponse du chatbot: 404 models/gemini-1.5-pro is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+2026-01-05 17:42:34.784 | INFO     | __main__:load_data:34 - Data loaded successfully from local file.
+2026-01-05 17:42:34.784 | INFO     | __main__:load_data:35 - DataFrame shape: (1031136, 16)
+2026-01-05 17:43:08.755 | DEBUG    | __main__:chatbot:141 - Message reçu du chatbot: hello
+2026-01-05 17:43:09.161 | ERROR    | __main__:generate_chatbot_response:131 - Erreur lors de la génération de la réponse du chatbot: 404 models/gemini-1.5-pro is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+2026-01-05 17:44:32.729 | DEBUG    | __main__:chatbot:141 - Message reçu du chatbot: hello
+2026-01-05 17:44:32.764 | ERROR    | __main__:generate_chatbot_response:131 - Erreur lors de la génération de la réponse du chatbot: 404 models/gemini-1.5-pro is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+2026-01-05 17:53:29.502 | INFO     | __main__:load_data:44 - Data loaded successfully
+2026-01-05 17:53:29.503 | INFO     | __main__:load_data:45 - DataFrame shape: (1031136, 16)
+2026-01-05 17:54:35.750 | DEBUG    | __main__:chatbot:190 - Chatbot message: hello
+2026-01-05 17:55:13.748 | DEBUG    | __main__:chatbot:190 - Chatbot message: Je cherche des livres de harry potter
+2026-01-05 21:48:17.328 | INFO     | __main__:load_data:38 - Data loaded: (1031136, 16)
+2026-01-05 21:49:08.400 | DEBUG    | __main__:chatbot:177 - User message: hello
+2026-01-05 21:49:18.295 | DEBUG    | __main__:chatbot:177 - User message: Harry potter
+2026-01-05 21:49:41.877 | DEBUG    | __main__:chatbot:177 - User message: je suis un enfant de 12 ans
