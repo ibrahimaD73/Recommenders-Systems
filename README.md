@@ -2,7 +2,7 @@
 
 ## À propos
 
-Bibliotech 2.0 est un système de recommandation de livres utilisant des techniques de machine learning et de l'IA générative . Cette application web permet aux utilisateurs de découvrir de nouveaux livres basés sur leurs préférences, d'obtenir des recommandations personnalisées, et d'explorer les tendances de lecture actuelles avec un  chatbot.
+Bibliotech est un système de recommandation de livres utilisant des techniques de machine learning et de l'IA générative . Cette application web permet aux utilisateurs de découvrir de nouveaux livres basés sur leurs préférences, d'obtenir des recommandations personnalisées, et d'explorer les tendances de lecture actuelles avec un  chatbot.
 
 ## Démo
 
